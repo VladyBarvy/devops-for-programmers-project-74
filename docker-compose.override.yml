@@ -1,0 +1,15 @@
+# docker-compose.override.yml
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"  # хост:контейнер (ваше приложение должно слушать 8080 внутри контейнера)
+    volumes:
+      - ./app:/app
+    command: make dev
+    environment:
+      NODE_ENV: development
