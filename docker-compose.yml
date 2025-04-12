@@ -9,3 +9,4 @@ services:
       - ./app:/app  # монтирование локальной директории app/ в /app внутри контейнера
     image: barvv/devops-for-programmers-project-74
     command: make dev
+    
