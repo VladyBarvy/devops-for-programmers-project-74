@@ -14,4 +14,5 @@ COPY ./app /app
 # Добавляем sequelize-cli в PATH
 #ENV PATH /app/node_modules/.bin:$PATH
 
-CMD ["make", "test"]
+CMD ["make", "dev"]
+ #test

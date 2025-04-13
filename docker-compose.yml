@@ -5,8 +5,72 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    volumes:
-      - ./app:/app  # монтирование локальной директории app/ в /app внутри контейнера
-    image: barvv/devops-for-programmers-project-74
+    # volumes:
+    #   - ./app:/app
+    image: barvv/devops-for-programmers-project-74:latest
     command: make dev
-    
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - 8080:8080
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      DATABASE_HOST: ${DATABASE_HOST:-db}
+      DATABASE_NAME: ${DATABASE_NAME:-postgres}
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-postgres}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+      DATABASE_PORT: ${DATABASE_PORT:-5432}
+      DATABASE_URL: ${DATABASE_URL:-postgres://postgres:postgres@db:5432/postgres}
+    # environment:
+    #   DATABASE_HOST: db
+    #   DATABASE_NAME: postgres
+    #   DATABASE_USERNAME: postgres
+    #   DATABASE_PASSWORD: password
+
+  caddy:
+    depends_on:
+      app:
+        condition: service_started
+    image: caddy:2
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./services/caddy/Caddyfile:/etc/caddy/Caddyfile:rw
+    restart: unless-stopped
+
+  # db:
+  #   image: postgres:latest
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: password
+  #     POSTGRES_DB: postgres
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 5
+  #   ports:
+  #     - "5432:5432"
+  
+  db:
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME:-postgres}
+      POSTGRES_USER: ${DATABASE_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+    healthcheck:
+      interval: 5s
+      retries: 5
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${DATABASE_USERNAME:-postgres}
+      timeout: 5s
+    image: postgres:15.1-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data:rw
+    restart: unless-stopped
+
+volumes:
+  postgres_data: 
