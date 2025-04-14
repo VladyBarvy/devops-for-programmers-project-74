@@ -15,4 +15,3 @@ COPY ./app /app
 #ENV PATH /app/node_modules/.bin:$PATH
 
 CMD ["make", "dev"]
- #test
